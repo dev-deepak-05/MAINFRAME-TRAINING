@@ -1,0 +1,61 @@
+IDENTIFICATION DIVISION.
+PROGRAM-ID. CHECK-EOF.
+
+ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+       SELECT CDR-FILE ASSIGN TO "INPUT.dat"
+       ORGANIZATION IS LINE SEQUENTIAL
+       FILE STATUS IS WS-STATUS.
+
+
+
+DATA DIVISION.
+      
+       FILE SECTION.
+       FD CDR-FILE.
+       01 CDR-RECORD PIC X(40).
+       
+       WORKING-STORAGE SECTION.
+       
+       01 WS-EOF       PIC X VALUE 'N'.
+       01 WS-STATUS    PIC XX.
+       01 WS-COUNT     PIC 9(5) VALUE 0.
+
+
+PROCEDURE DIVISION.
+
+MAIN-PROCESS.
+      OPEN INPUT CDR-FILE
+
+      IF WS-STATUS = "00"
+       PERFORM UNTIL WS-EOF = "Y"
+       READ CDR-FILE
+       
+           EVALUATE WS-STATUS
+               WHEN "00"
+               ADD 1 TO WS-COUNT
+               DISPLAY "RECORD : " CDR-RECORD
+    
+               WHEN "10"
+               MOVE "Y" TO WS-EOF
+    
+               WHEN OTHER
+               DISPLAY "FILE READ ERROR OCCURS : "WS-STATUS
+               MOVE "Y" TO WS-EOF
+    
+           END-EVALUATE
+       END-PERFORM
+
+       CLOSE CDR-FILE
+
+       DISPLAY "COUNT : " WS-COUNT
+
+      ELSE
+       DISPLAY "FILE OPEN ERROR : " WS-STATUS
+      END-IF
+
+      STOP RUN.
+       
+
+
